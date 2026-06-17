@@ -8,6 +8,8 @@ typedef char* (*fn_encrypt)(cipher_t*, const char*);
 typedef char* (*fn_decrypt)(cipher_t*, const char*);
 typedef void (*fn_destroy)(cipher_t*);
 typedef void (*fn_free)(char*);
+typedef cipher_t* (*fn_create_atbash)();
+
 int main()
 {
     HMODULE lib = LoadLibraryA("cipher.dll");
@@ -21,10 +23,14 @@ int main()
     auto decrypt = (fn_encrypt)GetProcAddress(lib, "cipher_decrypt");
     auto destroy = (fn_destroy)GetProcAddress(lib, "cipher_destroy");
     auto cfree = (fn_free)GetProcAddress(lib, "cipher_free");
+    auto create_atbash = (fn_create_atbash)GetProcAddress(lib, "cipher_create_atbash");
+
+
 
     while (true) {
         std::cout << "1.Caesar cipher\n";
         std::cout << "2.Vigenere cipher\n";
+        std::cout << "3.Atbash cipher\n";
         std::cout << "0.Exit\n";
         std::cout << "Choose: \n";
         int choice;
@@ -36,6 +42,9 @@ int main()
             std::cout << "Enter Caesar key:";
             std::cin >> key;
             cipher = create_caesar(key);
+        }
+        else if (choice == 3) {
+            cipher = create_atbash();
         }
         else {
             std::string key;

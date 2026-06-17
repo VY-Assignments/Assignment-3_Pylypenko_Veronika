@@ -23,7 +23,12 @@ public:
 	std::string encrypt(const std::string& text) override;
 	std::string decrypt(const std::string& text) override;
 };
- 
+ //extra task
+class AtbashCipher : public Cipher {
+public:
+	std::string encrypt(const std::string& text) override;
+	std::string decrypt(const std::string& text) override;
+};
 CaesarCipher::CaesarCipher (int key): key_(key){}
 std::string CaesarCipher::encrypt(const std::string& text) {
 	std::string result = text;
@@ -80,6 +85,22 @@ ki++;
 }
 return result;
 }
+ std::string AtbashCipher::encrypt(const std::string& text) {
+	 std::string result = text;
+	 int ki = 0;
+	 for (char& c : result) {
+		 if (std::isupper(c)) {
+			 c = 'Z' - (c - 'A');
+		 }
+		 else if (std::islower(c)) {
+			 c = 'z' - (c - 'a');
+		 }
+	 }
+	 return result;
+ }
+ std::string AtbashCipher::decrypt(const std::string& text) {
+	 return encrypt(text);//since it is symmetric
+ }
 #ifdef _WIN32
 #define EXPORT extern "C" __declspec(dllexport)
 #else
@@ -108,8 +129,11 @@ return result;
 
 	 EXPORT void cipher_destroy(cipher_t* cipher) {
 		 delete (Cipher*)cipher;
-	}
+	 }
 	 EXPORT void cipher_free(char* str) {
 		 delete[] str;
+	 }
+	 EXPORT cipher_t* cipher_create_atbash() {
+		 return (cipher_t*)new AtbashCipher();
 	 }
  
