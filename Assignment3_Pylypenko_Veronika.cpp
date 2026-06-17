@@ -1,20 +1,66 @@
-// Assignment3_Pylypenko_Veronika.cpp : This file contains the 'main' function. Program execution begins and ends there.
-//
-
 #include <iostream>
-
+#include <string>
+#include <windows.h>
+typedef void* cipher_t;
+typedef cipher_t*(*fn_create_caesar)(int);
+typedef cipher_t* (*fn_create_vigenere)(const char*);
+typedef char* (*fn_encrypt)(cipher_t*, const char*);
+typedef char* (*fn_decrypt)(cipher_t*, const char*);
+typedef void (*fn_destroy)(cipher_t*);
+typedef void (*fn_free)(char*);
 int main()
 {
-    std::cout << "Hello World!\n";
+    HMODULE lib = LoadLibraryA("cipher.dll");
+    if (!lib) {
+        std::cerr << "Error! cipher.dll cannot be load!\n";
+        return 1;
+    }
+    auto create_caesar = (fn_create_caesar)GetProcAddress(lib, "cipher_create_caesar");
+    auto create_vigenere = (fn_create_vigenere)GetProcAddress(lib, "cipher_create_vigenere");
+    auto enc = (fn_decrypt)GetProcAddress(lib, "cipher_encrypt");
+    auto decrypt = (fn_encrypt)GetProcAddress(lib, "cipher_decrypt");
+    auto destroy = (fn_destroy)GetProcAddress(lib, "cipher_destroy");
+    auto cfree = (fn_free)GetProcAddress(lib, "cipher_free");
+
+    while (true) {
+        std::cout << "1.Caesar cipher\n";
+        std::cout << "2.Vigenere cipher\n";
+        std::cout << "0.Exit\n";
+        std::cout << "Choose: \n";
+        int choice;
+        std::cin >> choice;
+        if (choice == 0)break;
+        cipher_t* cipher = nullptr;
+        if (choice == 1) {
+            int key;
+            std::cout << "Enter Caesar key:";
+            std::cin >> key;
+            cipher = create_caesar(key);
+        }
+        else {
+            std::string key;
+            std::cout << "Enter Vigenere key:";
+            std::cin >> key;
+            cipher = create_vigenere(key.c_str());
+        }
+        std::cout << "1. Encrypt; 2.Decrypt\n Choose: ";
+        int op;
+        std::cin >> op;
+        std::cin.ignore();
+        std::string text;
+        std::cout << "Enter text:";
+        std::getline(std::cin, text);
+        char* result = nullptr;
+        if (op == 1) result = enc(cipher, text.c_str());
+        else 
+        { result = decrypt(cipher, text.c_str()); }
+        std::cout << "Result: " << result << "\n";
+        cfree(result);
+        destroy(cipher);
+    }
+    FreeLibrary(lib);
+   
+    return 0;
+
 }
 
-// Run program: Ctrl + F5 or Debug > Start Without Debugging menu
-// Debug program: F5 or Debug > Start Debugging menu
-
-// Tips for Getting Started: 
-//   1. Use the Solution Explorer window to add/manage files
-//   2. Use the Team Explorer window to connect to source control
-//   3. Use the Output window to see build output and other messages
-//   4. Use the Error List window to view errors
-//   5. Go to Project > Add New Item to create new code files, or Project > Add Existing Item to add existing code files to the project
-//   6. In the future, to open this project again, go to File > Open > Project and select the .sln file
