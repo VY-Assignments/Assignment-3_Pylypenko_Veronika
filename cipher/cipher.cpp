@@ -1,8 +1,8 @@
 #include <string> 
 #include <cctype> 
 #include <cstring> 
-#include "cipher_api.h"
 
+typedef void* cipher_t;
 class Cipher {
 public:
 	virtual std::string encrypt(const std::string& text) = 0;
@@ -53,10 +53,10 @@ int ki=0;
 		if (std::isalpha(c)) {
 int shift=key_[ki%key_.size()] - 'A';
 if(std::isupper(c)){
-c ='A'+(c -'A'+shift %26+ 26)%26;}
+c ='A'+(c -'A'+shift)%26;}
 else
 {
-c ='a'+(c-'a'+shift %26 +26)%26;
+c ='a'+(c-'a'+shift)%26;
 		}
 ki++;
 	}
@@ -70,13 +70,46 @@ int ki=0;
 		if (std::isalpha(c)) {
 int shift=key_[ki%key_.size()] - 'A';
 if(std::isupper(c)){
-c ='A'+(c -'A'+shift %26+ 26)%26;}
+c ='A'+(c -'A'-shift + 26)%26;}
 else
 {
-c ='a'+(c-'a'+shift +26)%26;
+c ='a'+(c-'a'-shift +26)%26;
 		}
 ki++;
 	}
 }
 return result;
 }
+#ifdef _WIN32
+#define EXPORT extern "C" __declspec(dllexport)
+#else
+#define EXPORT extern "C" __attribute__((visibility("default")))
+#endif
+	 EXPORT cipher_t* cipher_create_caesar(int key) {
+		 return (cipher_t*) new CaesarCipher(key);
+	 }
+	 EXPORT cipher_t* cipher_create_vigenere(const char* key) {
+		 return(cipher_t*) new VigenereCipher(std::string(key));
+	 }
+	 EXPORT char* cipher_encrypt(cipher_t* cipher, const char* text) {
+		 Cipher* c = (Cipher*)cipher;
+		 std::string res = c->encrypt(std::string(text));
+		 char* out = new char[res.size() + 1];
+		 strcpy_s(out, res.size()+1, res.c_str());
+		 return out;
+	 }
+	 EXPORT char* cipher_decrypt(cipher_t* cipher, const char* text) {
+		 Cipher* c = (Cipher*)cipher;
+		 std::string res = c->decrypt(std::string(text));
+		 char* out = new char[res.size() + 1];
+		 strcpy_s(out, res.size() + 1, res.c_str());
+		 return out;
+	 }
+
+	 EXPORT void cipher_destroy(cipher_t* cipher) {
+		 delete (Cipher*)cipher;
+	}
+	 EXPORT void cipher_free(char* str) {
+		 delete[] str;
+	 }
+ 
