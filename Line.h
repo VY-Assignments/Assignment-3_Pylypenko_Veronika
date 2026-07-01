@@ -22,7 +22,6 @@ public: explicit TextLine(const std::string& text);
 };
 class CheckListLine :public Line {
 public:
-	virtual void print() const = 0;
 	std::string item_;
 	bool checked_;
 public: CheckListLine(const std::string& item, bool checked);
@@ -40,6 +39,7 @@ public:
 	std::string email_;
 public: ContactLine(const std::string& name, const std::string& surname, const std::string& email);
 	  void print() const override;
+	  std::string serialize() const override;
 	  const std::string& getName() const;
 	  const std::string& getSurname() const;
 	  const std::string& getEmail() const;
