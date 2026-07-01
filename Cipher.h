@@ -1,7 +1,8 @@
 #pragma once
+
 #include <string>
 #include <windows.h>
-#include "cipher_api.h"
+#include "cipher/cipher_api.h"
 
 enum class CipherType {
 	Caesar, 
